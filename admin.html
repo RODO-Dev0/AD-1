@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RODO_Dev — Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#04030a; --ink-2:#0a0714; --ink-3:#100c1c;
+  --line:rgba(237,229,245,0.08); --line-strong:rgba(237,229,245,0.16);
+  --paper:#ede5f5; --paper-dim:#8f7fa8;
+  --brass:#8a0000; --brass-2:#b81616; --brass-dim:#3d0000;
+  --ok:#5f8f6e; --warn:#b98a2e; --danger:#c0392b;
+  --mono:'Cinzel',serif; --disp:'Cinzel Decorative',serif; --body:'Cormorant Garamond',serif;
+}
+body{background:var(--ink);color:var(--paper);font-family:var(--body);min-height:100vh;line-height:1.6}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--ink-2)}
+::-webkit-scrollbar-thumb{background:var(--brass);border-radius:0}
+h1,h2,h3{font-family:var(--disp);font-weight:700}
+label{display:block;font-family:var(--mono);font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--paper-dim);margin-bottom:0.5rem}
+input,select{font-family:var(--body);font-style:italic;font-size:1rem;color:var(--paper);background:rgba(255,255,255,0.03);border:1px solid var(--line-strong);border-radius:0;padding:0.65rem 0.8rem;width:100%;outline:none}
+input:focus,select:focus{border-color:rgba(122,0,0,0.6)}
+button{cursor:pointer;font-family:var(--mono);font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;border:1px solid var(--line-strong);background:transparent;color:var(--paper);padding:0.55rem 1rem;transition:border-color .2s,background .2s}
+button:hover{border-color:var(--brass-2)}
+button:disabled{opacity:0.45;cursor:not-allowed}
+.btn-primary{background:var(--brass);border-color:var(--brass);color:var(--paper)}
+.btn-primary:hover{background:var(--brass-2)}
+.btn-danger{border-color:var(--danger);color:var(--danger)}
+.btn-danger:hover{background:var(--danger);color:var(--ink)}
+.btn-ok{border-color:var(--ok);color:var(--ok)}
+.btn-ok:hover{background:var(--ok);color:var(--ink)}
+
+/* ---------- gate ---------- */
+#gate{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem}
+.gate-box{width:min(380px,100%);border:1px solid var(--line-strong);padding:2.5rem 2rem;background:var(--ink-2)}
+.gate-box h1{font-size:1.4rem;text-align:center;margin-bottom:0.4rem}
+.gate-sub{font-family:var(--mono);font-size:0.6rem;letter-spacing:0.3em;text-align:center;color:var(--brass-2);text-transform:uppercase;margin-bottom:2rem}
+.field{margin-bottom:1.1rem}
+.err{color:var(--danger);font-size:0.85rem;font-style:italic;margin-top:0.6rem;display:none}
+.err.show{display:block}
+
+/* ---------- app ---------- */
+#app{display:none}
+#app.show{display:block}
+header{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.75rem;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(4,3,10,0.9);backdrop-filter:blur(8px);z-index:10}
+header h1{font-size:1.15rem}
+header .who{font-family:var(--mono);font-size:0.6rem;color:var(--paper-dim);letter-spacing:0.08em}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--line);padding:0 1.75rem;overflow-x:auto}
+.tab{font-family:var(--mono);font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;background:none;border:none;border-bottom:2px solid transparent;color:var(--paper-dim);padding:0.9rem 1.1rem;white-space:nowrap}
+.tab.active{color:var(--paper);border-color:var(--brass-2)}
+main{max-width:1200px;margin:0 auto;padding:2rem 1.75rem 5rem}
+.panel{display:none}
+.panel.active{display:block}
+.panel-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:1.5rem}
+.count-pill{font-family:var(--mono);font-size:0.6rem;letter-spacing:0.1em;color:var(--paper-dim);border:1px solid var(--line-strong);padding:0.3rem 0.7rem}
+
+table{width:100%;border-collapse:collapse;font-size:0.9rem}
+th{font-family:var(--mono);font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--paper-dim);text-align:left;padding:0.7rem 0.6rem;border-bottom:1px solid var(--line-strong);white-space:nowrap}
+td{padding:0.75rem 0.6rem;border-bottom:1px solid var(--line);vertical-align:top}
+tr:hover td{background:rgba(255,255,255,0.015)}
+.table-wrap{overflow-x:auto;border:1px solid var(--line)}
+.mono{font-family:var(--mono);font-size:0.72rem;color:var(--paper-dim)}
+.desc-cell{max-width:280px;white-space:normal}
+.badge{display:inline-block;font-family:var(--mono);font-size:0.58rem;letter-spacing:0.08em;text-transform:uppercase;padding:0.2rem 0.55rem;border:1px solid var(--line-strong);color:var(--paper-dim)}
+.badge.banned{color:var(--danger);border-color:var(--danger)}
+.badge.suspended{color:var(--warn);border-color:var(--warn)}
+.badge.ok{color:var(--ok);border-color:var(--ok)}
+.row-actions{display:flex;gap:0.4rem;flex-wrap:wrap}
+.row-actions button{padding:0.35rem 0.6rem;font-size:0.58rem}
+
+.ip-form{display:flex;gap:0.6rem;flex-wrap:wrap;margin-bottom:1.5rem;align-items:flex-end}
+.ip-form .field{margin-bottom:0;flex:1;min-width:160px}
+
+.empty{color:var(--paper-dim);font-style:italic;text-align:center;padding:3rem 0;border:1px dashed var(--line-strong)}
+.loading{color:var(--paper-dim);font-style:italic;text-align:center;padding:3rem 0}
+
+#toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(10px);background:var(--ink-3);border:1px solid rgba(122,0,0,0.4);padding:0.8rem 1.4rem;font-family:var(--mono);font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;opacity:0;visibility:hidden;transition:opacity .3s,transform .3s;z-index:400}
+#toast.show{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
+
+dialog{background:var(--ink-2);color:var(--paper);border:1px solid var(--line-strong);padding:1.75rem;width:min(360px,90vw)}
+dialog::backdrop{background:rgba(0,0,0,0.7)}
+dialog h3{margin-bottom:1rem;font-size:1.1rem}
+.dialog-actions{display:flex;justify-content:flex-end;gap:0.6rem;margin-top:1.25rem}
+
+@media (max-width:640px){
+  main{padding:1.5rem 1rem 4rem}
+  header{padding:1rem}
+  .tabs{padding:0 1rem}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ AUTH GATE ============ -->
+<div id="gate">
+  <div class="gate-box">
+    <h1>RODO_DEV</h1>
+    <div class="gate-sub">Admin Access</div>
+    <form id="gateForm">
+      <div class="field">
+        <label for="gEmail">Email</label>
+        <input type="email" id="gEmail" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label for="gPassword">Password</label>
+        <input type="password" id="gPassword" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn-primary" style="width:100%" id="gateSubmit">Sign In</button>
+      <div class="err" id="gateErr"></div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app">
+  <header>
+    <h1>RODO_DEV Admin</h1>
+    <div style="display:flex;align-items:center;gap:1rem">
+      <span class="who" id="whoEmail"></span>
+      <button id="signOutBtn">Sign Out</button>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-panel="requests">Requests</button>
+    <button class="tab" data-panel="accounts">Accounts</button>
+    <button class="tab" data-panel="logs">Logs</button>
+    <button class="tab" data-panel="ipbans">IP Bans</button>
+  </nav>
+
+  <main>
+    <!-- REQUESTS -->
+    <div class="panel active" id="panel-requests">
+      <div class="panel-head">
+        <h2>Incoming Requests</h2>
+        <div style="display:flex;gap:0.6rem;align-items:center">
+          <span class="count-pill" id="requestsCount">—</span>
+          <button id="refreshRequests">Refresh</button>
+        </div>
+      </div>
+      <div id="requestsWrap"><div class="loading">Loading…</div></div>
+    </div>
+
+    <!-- ACCOUNTS -->
+    <div class="panel" id="panel-accounts">
+      <div class="panel-head">
+        <h2>Accounts</h2>
+        <div style="display:flex;gap:0.6rem;align-items:center">
+          <span class="count-pill" id="accountsCount">—</span>
+          <button id="refreshAccounts">Refresh</button>
+        </div>
+      </div>
+      <div id="accountsWrap"><div class="loading">Loading…</div></div>
+    </div>
+
+    <!-- LOGS -->
+    <div class="panel" id="panel-logs">
+      <div class="panel-head">
+        <h2>Activity Logs</h2>
+        <div style="display:flex;gap:0.6rem;align-items:center">
+          <span class="count-pill" id="logsCount">—</span>
+          <button id="refreshLogs">Refresh</button>
+        </div>
+      </div>
+      <div id="logsWrap"><div class="loading">Loading…</div></div>
+    </div>
+
+    <!-- IP BANS -->
+    <div class="panel" id="panel-ipbans">
+      <div class="panel-head">
+        <h2>IP Bans</h2>
+        <span class="count-pill" id="ipbansCount">—</span>
+      </div>
+      <div class="ip-form">
+        <div class="field">
+          <label for="newIp">IP Address</label>
+          <input type="text" id="newIp" placeholder="203.0.113.4">
+        </div>
+        <div class="field">
+          <label for="newIpReason">Reason</label>
+          <input type="text" id="newIpReason" placeholder="Optional">
+        </div>
+        <button class="btn-danger" id="addIpBanBtn">Ban IP</button>
+      </div>
+      <div id="ipbansWrap"><div class="loading">Loading…</div></div>
+    </div>
+  </main>
+</div>
+
+<dialog id="confirmDialog">
+  <h3 id="confirmTitle">Are you sure?</h3>
+  <p id="confirmBody" style="color:var(--paper-dim);font-style:italic"></p>
+  <div class="dialog-actions">
+    <button id="confirmCancel">Cancel</button>
+    <button class="btn-danger" id="confirmOk">Confirm</button>
+  </div>
+</dialog>
+
+<div id="toast"></div>
+
+<script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const SUPABASE_URL = "https://mqunyprphjopuhlsvhlq.supabase.co";
+const SUPABASE_KEY = "sb_publishable_ZzjxFHfeerlKJY3hWuA3cQ_hoa15qbB";
+const ADMIN_EMAIL = "Don.Operation.0@gmail.com";
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+function $(sel){ return document.querySelector(sel); }
+function $all(sel){ return Array.from(document.querySelectorAll(sel)); }
+function escapeHtml(str){ const d = document.createElement('div'); d.textContent = str ?? ''; return d.innerHTML; }
+
+let toastTimer;
+function toast(msg){
+  const el = $('#toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('show'), 3000);
+}
+
+function confirmDialog(title, body){
+  return new Promise(resolve=>{
+    $('#confirmTitle').textContent = title;
+    $('#confirmBody').textContent = body;
+    const dlg = $('#confirmDialog');
+    dlg.showModal();
+    const onOk = ()=>{ cleanup(); resolve(true); };
+    const onCancel = ()=>{ cleanup(); resolve(false); };
+    function cleanup(){
+      dlg.close();
+      $('#confirmOk').removeEventListener('click', onOk);
+      $('#confirmCancel').removeEventListener('click', onCancel);
+    }
+    $('#confirmOk').addEventListener('click', onOk);
+    $('#confirmCancel').addEventListener('click', onCancel);
+  });
+}
+
+/* ============================================================
+   AUTH GATE
+============================================================ */
+let session = null;
+
+async function callAdminApi(action, params){
+  const res = await fetch(SUPABASE_URL + '/functions/v1/admin-api', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + session.access_token
+    },
+    body: JSON.stringify({ action, ...params })
+  });
+  const data = await res.json().catch(()=>({}));
+  if (!res.ok) throw new Error(data.error || ('Request failed (' + res.status + ')'));
+  return data;
+}
+
+$('#gateForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const email = $('#gEmail').value.trim();
+  const password = $('#gPassword').value;
+  const errEl = $('#gateErr'); errEl.classList.remove('show');
+  const btn = $('#gateSubmit'); btn.disabled = true; btn.textContent = 'Signing in…';
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    if ((data.user.email || '').toLowerCase() !== ADMIN_EMAIL.toLowerCase()){
+      await supabase.auth.signOut();
+      throw new Error('This account is not authorized for admin access.');
+    }
+    session = data.session;
+    enterApp(data.user);
+  } catch (err) {
+    errEl.textContent = err.message || 'Sign in failed.';
+    errEl.classList.add('show');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Sign In';
+  }
+});
+
+$('#signOutBtn').addEventListener('click', async ()=>{
+  await supabase.auth.signOut();
+  session = null;
+  $('#app').classList.remove('show');
+  $('#gate').style.display = 'flex';
+});
+
+function enterApp(user){
+  $('#whoEmail').textContent = user.email;
+  $('#gate').style.display = 'none';
+  $('#app').classList.add('show');
+  loadRequests();
+  loadAccounts();
+  loadLogs();
+  loadIpBans();
+}
+
+// Restore an existing admin session on reload without re-prompting.
+supabase.auth.getSession().then(({ data })=>{
+  if (data.session && (data.session.user.email || '').toLowerCase() === ADMIN_EMAIL.toLowerCase()){
+    session = data.session;
+    enterApp(data.session.user);
+  }
+});
+
+/* ============================================================
+   TABS
+============================================================ */
+$all('.tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    $all('.tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    $all('.panel').forEach(p=>p.classList.remove('active'));
+    $('#panel-' + tab.dataset.panel).classList.add('active');
+  });
+});
+
+/* ============================================================
+   REQUESTS
+============================================================ */
+async function loadRequests(){
+  $('#requestsWrap').innerHTML = '<div class="loading">Loading…</div>';
+  try {
+    const { data } = await callAdminApi('list_requests', {});
+    $('#requestsCount').textContent = data.length + ' total';
+    if (!data.length){ $('#requestsWrap').innerHTML = '<div class="empty">No requests yet.</div>'; return; }
+    const rows = data.map(r => `
+      <tr>
+        <td class="mono">${escapeHtml(new Date(r.created_at).toLocaleString())}</td>
+        <td>${escapeHtml(r.email)}</td>
+        <td>${escapeHtml(r.service_type === 'business' ? (r.business_subtype || 'Business') : 'Personal')}${r.business_name ? '<br><span class="mono">' + escapeHtml(r.business_name) + '</span>' : ''}</td>
+        <td class="desc-cell">${escapeHtml(r.description)}</td>
+        <td>${escapeHtml(r.contact)}</td>
+        <td>
+          <select data-request-status="${r.id}">
+            ${['pending','in_progress','done','rejected'].map(s => `<option value="${s}" ${s===r.status?'selected':''}>${s}</option>`).join('')}
+          </select>
+        </td>
+      </tr>
+    `).join('');
+    $('#requestsWrap').innerHTML = `<div class="table-wrap"><table>
+      <thead><tr><th>Date</th><th>Email</th><th>Type</th><th>Description</th><th>Contact</th><th>Status</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
+    $all('[data-request-status]').forEach(sel=>{
+      sel.addEventListener('change', async ()=>{
+        try {
+          await callAdminApi('update_request_status', { requestId: sel.dataset.requestStatus, status: sel.value });
+          toast('Status updated.');
+        } catch(err){ toast(err.message); }
+      });
+    });
+  } catch (err) {
+    $('#requestsWrap').innerHTML = '<div class="empty">' + escapeHtml(err.message) + '</div>';
+  }
+}
+$('#refreshRequests').addEventListener('click', loadRequests);
+
+/* ============================================================
+   ACCOUNTS
+============================================================ */
+async function loadAccounts(){
+  $('#accountsWrap').innerHTML = '<div class="loading">Loading…</div>';
+  try {
+    const { data, ips } = await callAdminApi('list_accounts', {});
+    $('#accountsCount').textContent = data.length + ' total';
+    const ipMap = {};
+    (ips || []).forEach(r => { ipMap[r.user_id] = r.ip_address; });
+    if (!data.length){ $('#accountsWrap').innerHTML = '<div class="empty">No accounts yet.</div>'; return; }
+    const rows = data.map(p => {
+      const suspended = p.suspended_until && new Date(p.suspended_until) > new Date();
+      let statusBadge = '<span class="badge ok">active</span>';
+      if (p.banned) statusBadge = '<span class="badge banned">banned</span>';
+      else if (suspended) statusBadge = '<span class="badge suspended">suspended</span>';
+      return `
+      <tr>
+        <td class="mono">${escapeHtml(new Date(p.created_at).toLocaleString())}</td>
+        <td>${escapeHtml(p.display_name || '')}<br><span class="mono">${escapeHtml(p.email)}</span></td>
+        <td class="mono">${p.phone_verified ? 'Phone verified' : 'No phone'}</td>
+        <td class="mono">${escapeHtml(ipMap[p.id] || '—')}</td>
+        <td>${statusBadge}${suspended ? '<br><span class="mono">until ' + escapeHtml(new Date(p.suspended_until).toLocaleString()) + '</span>' : ''}</td>
+        <td>
+          <div class="row-actions">
+            ${p.banned
+              ? `<button class="btn-ok" data-unban="${p.id}">Unban</button>`
+              : `<button class="btn-danger" data-ban="${p.id}">Ban</button>`}
+            ${suspended
+              ? `<button class="btn-ok" data-unsuspend="${p.id}">Unsuspend</button>`
+              : `<button data-suspend="${p.id}">Suspend 24h</button>`}
+            <button class="btn-danger" data-delete="${p.id}" data-email="${escapeHtml(p.email)}">Delete</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+    $('#accountsWrap').innerHTML = `<div class="table-wrap"><table>
+      <thead><tr><th>Joined</th><th>Account</th><th>Phone</th><th>Signup IP</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
+
+    $all('[data-ban]').forEach(b=>b.addEventListener('click', async ()=>{
+      const reason = prompt('Ban reason (optional):') || '';
+      try { await callAdminApi('ban_account', { userId: b.dataset.ban, reason }); toast('Account banned.'); loadAccounts(); }
+      catch(err){ toast(err.message); }
+    }));
+    $all('[data-unban]').forEach(b=>b.addEventListener('click', async ()=>{
+      try { await callAdminApi('unban_account', { userId: b.dataset.unban }); toast('Account unbanned.'); loadAccounts(); }
+      catch(err){ toast(err.message); }
+    }));
+    $all('[data-suspend]').forEach(b=>b.addEventListener('click', async ()=>{
+      try { await callAdminApi('suspend_account', { userId: b.dataset.suspend, hours: 24 }); toast('Account suspended for 24h.'); loadAccounts(); }
+      catch(err){ toast(err.message); }
+    }));
+    $all('[data-unsuspend]').forEach(b=>b.addEventListener('click', async ()=>{
+      try { await callAdminApi('unsuspend_account', { userId: b.dataset.unsuspend }); toast('Suspension lifted.'); loadAccounts(); }
+      catch(err){ toast(err.message); }
+    }));
+    $all('[data-delete]').forEach(b=>b.addEventListener('click', async ()=>{
+      const ok = await confirmDialog('Delete this account?', b.dataset.email + ' — this permanently deletes the account and its requests. This cannot be undone.');
+      if (!ok) return;
+      try { await callAdminApi('delete_account', { userId: b.dataset.delete }); toast('Account deleted.'); loadAccounts(); }
+      catch(err){ toast(err.message); }
+    }));
+  } catch (err) {
+    $('#accountsWrap').innerHTML = '<div class="empty">' + escapeHtml(err.message) + '</div>';
+  }
+}
+$('#refreshAccounts').addEventListener('click', loadAccounts);
+
+/* ============================================================
+   LOGS
+============================================================ */
+async function loadLogs(){
+  $('#logsWrap').innerHTML = '<div class="loading">Loading…</div>';
+  try {
+    const { data } = await callAdminApi('list_logs', {});
+    $('#logsCount').textContent = data.length + ' total';
+    if (!data.length){ $('#logsWrap').innerHTML = '<div class="empty">No log entries yet.</div>'; return; }
+    const rows = data.map(l => `
+      <tr>
+        <td class="mono">${escapeHtml(new Date(l.created_at).toLocaleString())}</td>
+        <td>${escapeHtml(l.email || '—')}</td>
+        <td class="mono">${escapeHtml(l.action)}</td>
+        <td class="mono desc-cell">${escapeHtml(JSON.stringify(l.meta || {}))}</td>
+      </tr>
+    `).join('');
+    $('#logsWrap').innerHTML = `<div class="table-wrap"><table>
+      <thead><tr><th>Date</th><th>Account</th><th>Action</th><th>Detail</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
+  } catch (err) {
+    $('#logsWrap').innerHTML = '<div class="empty">' + escapeHtml(err.message) + '</div>';
+  }
+}
+$('#refreshLogs').addEventListener('click', loadLogs);
+
+/* ============================================================
+   IP BANS
+============================================================ */
+async function loadIpBans(){
+  $('#ipbansWrap').innerHTML = '<div class="loading">Loading…</div>';
+  try {
+    const { data } = await callAdminApi('list_ip_bans', {});
+    $('#ipbansCount').textContent = data.length + ' total';
+    if (!data.length){ $('#ipbansWrap').innerHTML = '<div class="empty">No IPs banned.</div>'; return; }
+    const rows = data.map(b => `
+      <tr>
+        <td class="mono">${escapeHtml(new Date(b.created_at).toLocaleString())}</td>
+        <td class="mono">${escapeHtml(b.ip_address)}</td>
+        <td>${escapeHtml(b.reason || '—')}</td>
+        <td><button class="btn-ok" data-unbanip="${escapeHtml(b.ip_address)}">Unban</button></td>
+      </tr>
+    `).join('');
+    $('#ipbansWrap').innerHTML = `<div class="table-wrap"><table>
+      <thead><tr><th>Date</th><th>IP</th><th>Reason</th><th></th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
+    $all('[data-unbanip]').forEach(b=>b.addEventListener('click', async ()=>{
+      try { await callAdminApi('unban_ip', { ip: b.dataset.unbanip }); toast('IP unbanned.'); loadIpBans(); }
+      catch(err){ toast(err.message); }
+    }));
+  } catch (err) {
+    $('#ipbansWrap').innerHTML = '<div class="empty">' + escapeHtml(err.message) + '</div>';
+  }
+}
+$('#addIpBanBtn').addEventListener('click', async ()=>{
+  const ip = $('#newIp').value.trim();
+  const reason = $('#newIpReason').value.trim();
+  if (!ip){ toast('Enter an IP address.'); return; }
+  try {
+    await callAdminApi('ban_ip', { ip, reason });
+    $('#newIp').value = ''; $('#newIpReason').value = '';
+    toast('IP banned.');
+    loadIpBans();
+  } catch(err){ toast(err.message); }
+});
+</script>
+</body>
+</html>
